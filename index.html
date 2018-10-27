@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=4">	
+<meta name="description" content="This program is the JavaScript port of pwgen.">
+<meta name="application-name" content="pwgen">
+<meta name="author" content="hachisukansw">
+<!--
+/*
+ * This program is the JavaScript port of "pwgen2.07". by hachisukansw
+ */
+
+Copyright: 2001, 2002, 2005, 2006, 2014 Theodore Ts'o <tytso@mit.edu>
+License: GPL-2
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License, v2, as
+ published by the Free Software Foundation
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+-->
+<style type="text/css">
+html,body {
+	height: calc(100% - 8px);
+	margin: 0px;
+	padding: 4px;
+	border: none;
+}
+* {
+	font-family: monospace, 'Courier New', Consolas;
+    font-size: 16px;
+	letter-spacing: 0px;
+	background-color: white;
+	color: black;
+}
+xinput {
+	-webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0px;
+}
+a {
+	text-decoration: none;
+}
+input[type="text"] {
+	width: 2em;
+	margin-left: 0.5em;
+    font-size: 14px;
+	border: 1px solid silver;
+	color: silver;
+}
+input[type="checkbox"] {
+	display: none;
+}
+label {
+	color: silver;
+}
+label::before {
+	content: "[ ]";
+}
+input[type="checkbox"]:checked + label {
+	color: black;
+}
+input[type="checkbox"]:checked + label::before {
+	content: "[X]";
+}
+input[type="checkbox"]:checked + label + input[type="text"] {
+	color: black;
+	border: 1px solid black;
+}
+#options {
+	margin: 0.5em;
+	padding-bottom: 0px;
+	color: silver;
+}
+#result {
+	box-sizing: border-box;
+	width: 100%;
+	height: 25em;
+	overflow-x: hidden;
+	overflow-y: auto;
+	padding: 0.25em;
+	border: 1px solid gray;
+	background-color: whitesmoke;
+	margin: 0px;
+	word-wrap: normal;
+}
+#status {
+	margin: 0px;
+}
+</style>
+</head>
+<body>
+pwgen - generate pronounceable passwords<br />
+<p id="options">
+<input type="checkbox" id="-0"><label for="-0">0</label>
+<input type="checkbox" id="-1"><label for="-1">1</label>
+<input type="checkbox" id="-A"><label for="-A">A</label>
+<input type="checkbox" id="-a"><label for="-a">a</label>
+<input type="checkbox" id="-B"><label for="-B">B</label>
+<input type="checkbox" id="-BB"><label for="-BB">BB</label>
+<input type="checkbox" id="-C"><label for="-C">C</label>
+<input type="checkbox" id="-c"><label for="-c">c</label>
+<input type="checkbox" id="-n"><label for="-n">n</label>
+<input type="checkbox" id="-N"><label for="-N">N</label><input type="text" id="-N_txt">
+<input type="checkbox" id="-s"><label for="-s">s</label>
+<input type="checkbox" id="-h"><label for="-h">h</label>
+<input type="checkbox" id="-H"><label for="-H">H</label><input type="text" id="-H_txt">
+<input type="checkbox" id="-v"><label for="-v">v</label>
+<input type="checkbox" id="-y"><label for="-y">y</label>
+<input type="checkbox" id="-L"><label for="-L">length</label><input type="text" id="-L_txt">
+ | <a href="javascript:void(0)" id="refresh">refresh</a>
+</p>
+<textarea id="result" spellcheck="false"></textarea>
+<pre id="status"></pre>
+<p id="filters">
+filters:<br>
+<input type="checkbox" id="--uniq"><label for="--uniq">uniq</label>
+<input type="checkbox" id="--grep-upper"><label for="--grep-upper">grep[A-Z]</label>
+<input type="checkbox" id="--grep-lower"><label for="--grep-lower">grep[a-z]</label>
+<input type="checkbox" id="--grep-digit"><label for="--grep-digit">grep[0-9]</label>
+<input type="checkbox" id="--grep-punct"><label for="--grep-punct">grep[[:punct:]]</label>
+<input type="checkbox" id="--uniq-char"><label for="--uniq-char">uniq-char</label>
+<input type="checkbox" id="--same2char"><label for="--same2char">same2char</label>
+<input type="checkbox" id="--same3char"><label for="--same3char">same3char</label>
+<input type="checkbox" id="--reading"><label for="--reading">reading</label>
+</p>
+</body>
+<script src="pwgen_h.js"></script>
+<script src="pw_rand_c.js"></script>
+<script src="pw_phonemes_c.js"></script>
+<script src="sha1_c.js"></script>
+<script src="randnum_c.js"></script>
+<script src="sha1num_c.js"></script>
+<script src="pwgen_c.js"></script>
+<script>
+'use strict'
+
+class UI {
+	constructor() {
+		this._elements = {};
+		this.registElements();
+	}
+	elements() {
+		return this._elements;
+	}
+	registElements() {
+		for (let o of Array.from(document.getElementsByTagName('*'))) {
+			if (!o.id) continue;
+			this._elements[o.id] = o
+		}
+		for (let key in this._elements) {
+			this[key] = this._elements[key];
+		}
+	}
+	fromOpt(opt) {
+		for (let o of Object.values(this._elements)) {
+			if (o.tagName != "INPUT") continue;
+			if (o.type == "text") {
+				o.value = "";
+			} else if (o.type == "checkbox") {
+				o.checked = false;
+			}
+		}
+		for (let o of opt.keyValues()) {
+			if (!(o.key in this._elements)) continue;
+			if (this._elements[o.key].type == "checkbox") {
+				this._elements[o.key].checked = true;
+				if (`${o.key}_txt` in this._elements) {
+					this._elements[`${o.key}_txt`].value = o.value;
+				}
+			}
+		}
+		if (opt.valuesForKey("-B").length>=2) {
+			this._elements["-BB"].checked = true;
+			this._elements["-B"].checked = false;
+		}
+	}
+	fromUrl(url) {
+		this.fromOpt(new Opt(url));
+	}
+	toArray() {
+		let result = [];
+		for (let o of Object.values(this._elements)) {
+			if (!/^-/.test(o.id)) continue;
+			if (o.type == "checkbox" && o.checked && `${o.id}_txt` in this._elements) {
+				result.push({"key":o.id, "value":this._elements[`${o.id}_txt`].value});
+			} else if (o.type == "checkbox" && o.checked) {
+				result.push({"key": o.id});
+			}
+		}
+		result.push({"key": "--term-width", "value": this.computeTermWidth()});
+		return result;
+	}
+	toString() {
+		return this.toArray().map(o=>o.value?`${o.key}=${o.value}`:o.key).join("&");
+	}
+	toOpt() {
+		return new Opt(this.toString());
+	}
+	showPassword(pwgen) {
+		this["result"].value = pwgen.toString();
+		this["status"].textContent = `count: ${pwgen.list().length}`;
+	}
+	computeTermWidth() {
+		let check_element = this["result"];
+		let backup = {};
+		backup["text"] = check_element.value;
+		backup["overflow-y"] = window.getComputedStyle(check_element,null)["overflow-y"];
+		check_element.style.overflowY = "scroll";
+		let max = 1000;
+		let min = 0
+		let m;
+		while (max >= min) {
+			m = min + Math.floor((max - min) / 2);
+			check_element.value = new Array(m).fill("A").join("");
+			if (check_element.scrollWidth > check_element.clientWidth) {
+				max = m - 1;
+			} else {
+				min = m + 1
+			}
+		}
+		check_element.style.overflowY = backup["overflow-y"];
+		check_element.value = backup["text"];
+		return m - 1;
+	}
+}
+
+let ui = new UI();
+let opt = new Opt(window.location.search);
+let pwgen = new Pwgen(opt);
+opt.merge([{"key": "--term-width", "value": ui.computeTermWidth()}]);
+pwgen.generate();
+pwgen.filter();
+ui.showPassword(pwgen);
+ui.fromOpt(opt);
+
+function refresh(e) {
+	pwgen.generate(ui.toOpt());
+	pwgen.filter();
+	ui.showPassword(pwgen);
+}
+function refreshFilter(e) {
+	pwgen.clearFilter();
+	pwgen.filter(ui.toOpt());
+	ui.showPassword(pwgen);
+}
+
+for (let o of Object.values(ui.elements())) {
+	if (o.type == "checkbox" && /^--(uniq|grep|same|reading)/.test(o.id)) {
+		o.addEventListener("change", e=>refreshFilter(e));
+	} else if (o.type == "checkbox") {
+		o.addEventListener("change", e=>refresh(e));
+	} else if (o.type == "text") {
+		o.addEventListener("input", e=>refresh(e));
+	}
+}
+ui["refresh"].addEventListener("click", e=>refresh());
+
+</script>
+</html>
