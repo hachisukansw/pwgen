@@ -349,7 +349,7 @@ class Pwgen {
 					} else {
 						return s;
 					}
-			}).join("-"));
+			}).join("・"));
 		}
 	}
 	toString() {
