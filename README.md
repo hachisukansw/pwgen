@@ -5,7 +5,7 @@ pwgen - generate pronounceable passwords
 
 ## Demo
 
-https://hachisukansw.github.to/pwgen/
+https://hachisukansw.github.io/pwgen/
 
 ## オプションの指定方法
 オリジナルはコマンドラインなので`pwgen [オプション値]`という形式でオプションを指定できましたが、このブラウザ版ではURLの ? 以降に指定をします。URLで複数指定する場合は & でつなぎます。`/pwgen?-A&-B`という感じです。 -N や -H のように値が必要な場合は`/pwgen?-N=100`のように指定します。
