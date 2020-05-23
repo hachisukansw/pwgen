@@ -68,6 +68,8 @@ const usage_en = ""
 	+"   --grep-digit\n"
 	+"\tLimit to those containing numbers\n"
 	+"   --grep-punct\n"
+	+"\tLimit to one uppercase letter\n"
+	+"   --grep-1upper\n"
 	+"\tLimit to those containing special characters\n"
 	+"   --uniq-char\n"
 	+"\tDo not include the same charactern"
@@ -115,6 +117,8 @@ const usage_ja = ""
 	+"   --grep-digit\n"
 	+"\t数字を含むものに限定する\n"
 	+"   --grep-punct\n"
+	+"\t大文字が1文字だけ含まれているものに限定する\n"
+	+"   --grep-1upper\n"
 	+"\t特殊文字を含むものに限定する\n"
 	+"   --uniq-char\n"
 	+"\tパスワード中に同じ文字を含めない\n"
@@ -315,6 +319,7 @@ class Pwgen {
 		if (this._opt.hasKey("--grep-punct")) {
 			this._filtered = this._filtered.filter(pw=>pw.split("").filter(s=>pw_symbols.includes(s)).length>0);
 		}
+		if (this._opt.hasKey("--grep-1upper")) this._filtered = this._filtered.filter(pw=>(/^[^A-Z]*[A-Z][^A-Z]*$/.test(pw)));
 		if (this._opt.hasKey("--uniq-char")) {
 			this._filtered = this._filtered.filter(pw=>{
 				let count = {};
