@@ -5,7 +5,7 @@ pwgen - generate pronounceable passwords
 
 ## Demo
 
-https://hachisukansw.github.io/pwgen/
+https://hachisukansw.github.to/pwgen/
 
 ## オプションの指定方法
 オリジナルはコマンドラインなので`pwgen [オプション値]`という形式でオプションを指定できましたが、このブラウザ版ではURLの ? 以降に指定をします。URLで複数指定する場合は & でつなぎます。`/pwgen?-A&-B`という感じです。 -N や -H のように値が必要な場合は`/pwgen?-N=100`のように指定します。
@@ -83,6 +83,8 @@ pwgenでサポートされるオプション:
 	数字を含むものに限定する
    --grep-punct
 	特殊文字を含むものに限定する
+   --grep-1upper
+	大文字が1文字だけ含まれているものに限定する
    --uniq-char
 	パスワード中に同じ文字を含めない
    --same2char
@@ -97,12 +99,17 @@ pwgenでサポートされるオプション:
 -B（あいまいな文字除外）の過剰版です。
 
 ```text:pw_rand.c
-（オリジナル版 -Bオプション）
-const pw_ambiguous = "B8G6I1l0OQDS5Z2";
+（オリジナル版 -Bオプション）＋特殊文字
+const pw_ambiguous = "B8G6I1l0OQDS5Z2-_~'`\".,:;|/\\";
 
 （過剰版 -BBオプション）
-const pw_ambiguous = "B8G6bI1l7i0OoQDSs5Zz29qgadCcKkUuVvXx";
+const pw_ambiguous = "B8G6bI1l7i0OoQDSs5Zz29qgadCcKkUuVvXx-_~^'`\".,:;@$&?*+|/\\(){}[]<>";
 ```
 
 ### フィルター
 オプションで -c を指定しても大文字が含まれないことが稀にあって、困ることもありそうなので、結果から大文字を含むものだけに限定する`grep[A-Z]`等のフィルターを追加してみました。
+
+
+## 変更履歴
+- 2021-8-16 -B と -BB で使用する文字制限に特殊文字を追加
+- 2021-8-16 ヘルプの間違いを修正
