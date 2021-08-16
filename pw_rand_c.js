@@ -18,7 +18,7 @@ const pw_uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const pw_lowers = "abcdefghijklmnopqrstuvwxyz";
 const pw_symbols = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 //const pw_ambiguous_list = ["B8G6I1l0OQDS5Z2", "B8G6bI1l7i0OoQDSs5Zz29qgadCcKkUuVvXx"];
-const pw_ambiguous_list = ["B8G6I1l0OQDS5Z2-_~'`\".,:;|/\\", "B8G6bI1l7i0OoQDSs5Zz29qgadCcKkUuVvXx-_~^'`\".,:;@$&?*+|/\\(){}[]<>"];
+const pw_ambiguous_list = ["B8G6I1l0OQDS5Z2-_~'`\".,:;|/\\(){}[]<>", "B8G6bI1l7i0OoQDSs5Zz29qgadCcKkUuVvXx-_~^'`\".,:;@$&?*+|/\\(){}[]<>"];
 let pw_ambiguous = pw_ambiguous_list[0];
 const pw_vowels = "01aeiouyAEIOUY";
 const pw_yomi = {
