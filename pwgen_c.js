@@ -319,6 +319,9 @@ class Pwgen {
 		if (this._opt.hasKey("--grep-punct")) {
 			this._filtered = this._filtered.filter(pw=>pw.split("").filter(s=>pw_symbols.includes(s)).length>0);
 		}
+		if (this._opt.hasKey("--grep-1punct")) {
+			this._filtered = this._filtered.filter(pw=>pw.split("").filter(s=>pw_symbols.includes(s)).length==1);
+		}
 		if (this._opt.hasKey("--grep-1upper")) this._filtered = this._filtered.filter(pw=>(/^[^A-Z]*[A-Z][^A-Z]*$/.test(pw)));
 		if (this._opt.hasKey("--uniq-char")) {
 			this._filtered = this._filtered.filter(pw=>{
